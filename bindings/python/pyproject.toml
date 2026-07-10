@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,7 +16,7 @@ classifiers = [
 authors = [{ name = "postsolar" }]
 requires-python = ">=3.10"
 license.text = "MIT"
-readme = "README.md"
+readme = "../../README.md"
 
 [project.urls]
 Homepage = "https://github.com/postsolar/tree-sitter-kanata"
@@ -27,3 +27,12 @@ core = ["tree-sitter~=0.24"]
 [tool.cibuildwheel]
 build = "cp310-*"
 build-frontend = "build"
+
+[tool.setuptools]
+packages = ["tree_sitter_kanata"]
+
+[tool.setuptools.package-data]
+tree_sitter_kanata = ["*.pyi", "py.typed"]
+
+[tool.setuptools.ext-modules]
+"tree_sitter_kanata._binding" = { sources = ["tree_sitter_kanata/binding.c", "../../src/parser.c", "../../src/scanner.c"], include_dirs = ["../../src"] }
