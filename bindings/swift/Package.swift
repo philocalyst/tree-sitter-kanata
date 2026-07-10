@@ -4,7 +4,7 @@ import Foundation
 import PackageDescription
 
 var sources = ["src/parser.c"]
-if FileManager.default.fileExists(atPath: "src/scanner.c") {
+if FileManager.default.fileExists(atPath: "../../src/scanner.c") {
     sources.append("src/scanner.c")
 }
 
@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "TreeSitterKanata",
             dependencies: [],
-            path: ".",
+            path: "../..",
             sources: sources,
             resources: [
                 .copy("queries")
@@ -34,7 +34,7 @@ let package = Package(
                 "SwiftTreeSitter",
                 "TreeSitterKanata",
             ],
-            path: "bindings/swift/TreeSitterKanataTests"
+            path: "TreeSitterKanataTests"
         )
     ],
     cLanguageStandard: .c11
