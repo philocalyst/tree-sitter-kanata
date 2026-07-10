@@ -1,0 +1,8 @@
+(deflocalkeys-linux
+  yen 124
+  ro  89
+)
+
+(defvirtualkeys
+  vol-up (macro volu)
+)

@@ -2,40 +2,43 @@
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "kanata",
   "rules": {
-    "kanata": {
+    "source_file": {
       "type": "REPEAT",
       "content": {
         "type": "SYMBOL",
-        "name": "list"
+        "name": "_form"
       }
     },
-    "line_comment": {
-      "type": "SEQ",
+    "_form": {
+      "type": "CHOICE",
       "members": [
         {
-          "type": "STRING",
-          "value": ";;"
+          "type": "SYMBOL",
+          "name": "list"
         },
         {
-          "type": "PATTERN",
-          "value": "[^\\n]*"
-        }
-      ]
-    },
-    "block_comment": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "#|"
+          "type": "SYMBOL",
+          "name": "string"
         },
         {
-          "type": "PATTERN",
-          "value": "[^|]*\\|+([^|#][^|]*\\|+)*"
+          "type": "SYMBOL",
+          "name": "raw_string"
         },
         {
-          "type": "STRING",
-          "value": "#"
+          "type": "SYMBOL",
+          "name": "number"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "variable_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "alias_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
         }
       ]
     },
@@ -50,7 +53,7 @@
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
-            "name": "_item"
+            "name": "_form"
           }
         },
         {
@@ -59,46 +62,92 @@
         }
       ]
     },
-    "_item": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "unquoted_item"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "quoted_item"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "list"
-        }
-      ]
+    "string": {
+      "type": "TOKEN",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "\""
+          },
+          {
+            "type": "PATTERN",
+            "value": "[^\"\\n]*"
+          },
+          {
+            "type": "STRING",
+            "value": "\""
+          }
+        ]
+      }
     },
-    "unquoted_item": {
+    "number": {
       "type": "PATTERN",
-      "value": "[^\\s)(\"]+"
+      "value": "-?\\d+(\\.\\d+)?"
     },
-    "quoted_item": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "\""
-        },
-        {
-          "type": "PATTERN",
-          "value": "[^\"]*"
-        },
-        {
-          "type": "STRING",
-          "value": "\""
+    "variable_reference": {
+      "type": "PATTERN",
+      "value": "\\$[^\\s()\"]+"
+    },
+    "alias_reference": {
+      "type": "PATTERN",
+      "value": "@[^\\s()\"]+"
+    },
+    "identifier": {
+      "type": "PATTERN",
+      "value": "[^\\s()\"]+"
+    },
+    "line_comment": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": ";;"
+            },
+            {
+              "type": "PATTERN",
+              "value": "[^\\n]*"
+            }
+          ]
         }
-      ]
+      }
+    },
+    "block_comment": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "#|"
+            },
+            {
+              "type": "PATTERN",
+              "value": "[^|]*\\|+([^#|][^|]*\\|+)*"
+            },
+            {
+              "type": "STRING",
+              "value": "#"
+            }
+          ]
+        }
+      }
     }
   },
   "extras": [
+    {
+      "type": "PATTERN",
+      "value": "\\s"
+    },
     {
       "type": "SYMBOL",
       "name": "line_comment"
@@ -106,23 +155,16 @@
     {
       "type": "SYMBOL",
       "name": "block_comment"
-    },
-    {
-      "type": "PATTERN",
-      "value": "\\n"
-    },
-    {
-      "type": "PATTERN",
-      "value": "\\r"
-    },
-    {
-      "type": "PATTERN",
-      "value": "\\p{Zs}"
     }
   ],
   "conflicts": [],
   "precedences": [],
-  "externals": [],
+  "externals": [
+    {
+      "type": "SYMBOL",
+      "name": "raw_string"
+    }
+  ],
   "inline": [],
   "supertypes": [],
   "reserved": {}

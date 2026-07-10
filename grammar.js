@@ -1,43 +1,46 @@
-/**
- * @file Tree-sitter grammar for kanata
- * @author postsolar
- * @license MIT
- */
-
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
 module.exports = grammar({
   name: "kanata",
 
-  extras: $ => [
-    $.line_comment,
-    $.block_comment,
-    /\n/,
-    /\r/,
-    /\p{Zs}/,
+  externals: $ => [
+    $.raw_string,
   ],
 
-  // TODO
-  // regex queries here are very naive with regards to kanata syntax
+  extras: $ => [
+    /\s/,
+    $.line_comment,
+    $.block_comment,
+  ],
 
   rules: {
-    kanata: $ => repeat($.list),
+    source_file: $ => repeat($._form),
 
-    line_comment: _ => seq(';;', /[^\n]*/),
-
-    block_comment: _ => seq('#|', /[^|]*\|+([^|#][^|]*\|+)*/, '#'),
-
-    list: $ => seq('(', repeat($._item), ')'),
-
-    _item: $ => choice(
-      $.unquoted_item,
-      $.quoted_item,
+    _form: $ => choice(
       $.list,
+      $.string,
+      $.raw_string,
+      $.number,
+      $.variable_reference,
+      $.alias_reference,
+      $.identifier,
     ),
 
-    unquoted_item: _ => /[^\s)("]+/,
+    list: $ => seq("(", repeat($._form), ")"),
 
-    quoted_item: _ => seq('"', /[^"]*/, '"'),
-  }
+    string: _ => token(seq('"', /[^"\n]*/, '"')),
+
+    number: _ => /-?\d+(\.\d+)?/,
+
+    variable_reference: _ => /\$[^\s()"]+/,
+
+    alias_reference: _ => /@[^\s()"]+/,
+
+    identifier: _ => /[^\s()"]+/,
+
+    line_comment: _ => token(prec(2, seq(";;", /[^\n]*/))),
+
+    block_comment: _ => token(prec(2, seq("#|", /[^|]*\|+([^#|][^|]*\|+)*/, "#"))),
+  },
 });

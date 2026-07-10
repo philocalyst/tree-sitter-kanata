@@ -1,0 +1,71 @@
+;; Example kanata configuration exercising most syntax forms.
+
+#| Block comments
+   can span lines |#
+
+(defcfg
+  process-unmapped-keys yes
+  danger-enable-cmd no
+  linux-dev ("/dev/input/by-path/platform-i8042-serio-0-event-kbd")
+)
+
+(defvar
+  tap-time 200
+  hold-time 250
+  greeting r#"hello "world""#
+  combined (concat $tap-time "ms")
+)
+
+(defsrc
+  grv  1    2    3    4    5
+  tab  q    w    e    r    t
+  caps a    s    d    f    g
+)
+
+(defalias
+  cap (tap-hold $tap-time $hold-time caps (layer-while-held nav))
+  cA C-A-del
+  sym (layer-switch symbols)
+)
+
+(deflayer base
+  grv  1    2    3    4    5
+  tab  q    w    e    r    t
+  @cap a    s    d    f    g
+)
+
+(deflayer nav
+  _    _    _    _    _    _
+  _    XX   XX   XX   XX   XX
+  _    left down up   rght _
+)
+
+(deflayermap (symbols)
+  q S-1
+  w S-2
+  e (unicode €)
+)
+
+(deftemplate homerow (key mod)
+  (tap-hold $tap-time $hold-time $key $mod)
+)
+
+(defalias hr-a (t! homerow a lmet))
+
+(deffakekeys
+  ctl-tab (macro C-tab)
+)
+
+(defchords chrd 50
+  (a  ) a
+  (  s) s
+  (a s) esc
+)
+
+(defseq ctl-tab (o t O-(a b)))
+
+(platform (linux)
+  (defoverrides (lsft grv) (lsft 1))
+)
+
+(include "extra.kbd")

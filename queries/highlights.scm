@@ -1,64 +1,124 @@
-; comments
 (line_comment) @comment.line
 (block_comment) @comment.block
 
-; parentheses
+(string) @string
+(raw_string) @string
+(number) @constant.numeric
+
+(variable_reference) @variable
+(alias_reference) @label
+
 [
   "("
   ")"
 ] @punctuation.bracket
 
-; any declaration
+((identifier) @string.special.symbol
+  (#match? @string.special.symbol "^(RS|RC|RA|RM|AG|[SCAMO])-"))
+
+((identifier) @constant.builtin
+  (#any-of? @constant.builtin
+    "_" "__" "___" "‗" "≝"
+    "XX" "✗" "∅" "•"))
+
+((identifier) @constant.builtin.boolean
+  (#any-of? @constant.builtin.boolean "yes" "no" "true" "false"))
+
+((identifier) @function.builtin
+  (#any-of? @function.builtin
+    "lrld" "lrld-next" "lrnx" "lrld-prev" "lrpv"
+    "rpt" "repeat" "rpt-key" "rpt-any"
+    "sldr" "scnl" "use-defsrc" "reverse-release-order"))
+
 (list
-  . (unquoted_item) @keyword
-    (#match? @keyword "platform|def(alias|aliasenvcond|cfg|chords|chordsv2-experimental|fakekeys|layer|layermap|localkeys-(win|winiov2|wintercept|linux|macos)|overrides|seq|src|template|var|virtualkeys)"))
+  . (identifier) @function.builtin
+  (#any-of? @function.builtin
+    "layer-switch" "layer-toggle" "layer-while-held"
+    "tap-hold" "tap-hold-press" "tap-hold-release"
+    "tap-hold-press-timeout" "tap-hold-release-timeout"
+    "tap-hold-release-keys" "tap-hold-except-keys"
+    "tap-hold-tap-keys" "tap-hold-keys" "tap-hold-order"
+    "tap-hold-opposite-hand" "tap-hold-opposite-hand-release"
+    "macro" "macro-repeat" "macro-release-cancel"
+    "macro-repeat-release-cancel" "macro-cancel-on-press"
+    "macro-repeat-cancel-on-press"
+    "macro-release-cancel-and-cancel-on-press"
+    "macro-repeat-release-cancel-and-cancel-on-press"
+    "dynamic-macro-record" "dynamic-macro-play"
+    "dynamic-macro-record-stop-truncate"
+    "one-shot" "one-shot-press" "one-shot-release"
+    "one-shot-press-pcancel" "one-shot-release-pcancel"
+    "one-shot-pause-processing"
+    "caps-word" "caps-word-toggle" "caps-word-custom"
+    "caps-word-custom-toggle"
+    "multi" "unicode" "chord" "tap-dance" "tap-dance-eager"
+    "switch" "sequence" "sequence-noerase" "fork" "unmod" "unshift"
+    "release-key" "release-layer"
+    "on-press-fakekey" "on-release-fakekey"
+    "on-press-delay" "on-release-delay"
+    "on-press-fakekey-delay" "on-release-fakekey-delay"
+    "on-idle-fakekey" "on-press" "on-release" "on-idle"
+    "on-physical-idle" "hold-for-duration"
+    "mwheel-up" "mwheel-down" "mwheel-left" "mwheel-right"
+    "mwheel-accel-up" "mwheel-accel-down" "mwheel-accel-left"
+    "mwheel-accel-right"
+    "movemouse-up" "movemouse-down" "movemouse-left"
+    "movemouse-right" "movemouse-accel-up" "movemouse-accel-down"
+    "movemouse-accel-left" "movemouse-accel-right"
+    "movemouse-speed" "setmouse"
+    "arbitrary-code" "cmd" "cmd-log" "cmd-output-keys" "push-msg"
+    "clipboard-set" "clipboard-cmd-set" "clipboard-save"
+    "clipboard-restore" "clipboard-save-set"
+    "clipboard-save-cmd-set" "clipboard-save-swap"
+    "live-reload-num" "live-reload-file"))
 
-; named declarations - layers
 (list
-  .
-  ((unquoted_item) @_ (#eq? @_ "deflayer")
-    .
-    (unquoted_item) @namespace))
+  . (identifier) @function.macro
+  (#any-of? @function.macro "template-expand" "t!" "concat"))
 
-; named declarations - layermaps
 (list
-  .
-  ((unquoted_item) @_ (#eq? @_ "deflayermap")
-    .
-    (list (unquoted_item) @namespace)))
+  . (identifier) @keyword.control.conditional
+  (#any-of? @keyword.control.conditional
+    "if-equal" "if-not-equal" "if-in-list" "if-not-in-list"))
 
-; includes
 (list
-  .
-  (unquoted_item) @keyword.control.import (#eq? @keyword.control.import "include")
-  .
-  [
-    (quoted_item)
-    (unquoted_item)
-  ] @string.special.path)
+  . (identifier) @keyword
+  (#any-of? @keyword
+    "defcfg" "defsrc" "deflayer" "deflayer-mapped" "deflayermap"
+    "defalias" "defaliasenvcond" "defvar" "deftemplate"
+    "deffakekeys" "defvirtualkeys" "defchords" "defchordsv2"
+    "defchordsv2-experimental" "defzippy" "defzippy-experimental"
+    "defseq" "defhands" "definputdevices"
+    "defoverrides" "defoverridesv2"
+    "deflocalkeys-macos" "deflocalkeys-linux" "deflocalkeys-win"
+    "deflocalkeys-winiov2" "deflocalkeys-wintercept"
+    "platform" "environment"))
 
-; platform name
 (list
-  .
-  ((unquoted_item) @_ (#eq? @_ "platform")
-    .
-    (list (unquoted_item) @namespace)))
+  . (identifier) @keyword.control.import
+  (#eq? @keyword.control.import "include"))
 
-; functions
 (list
-  (list
-    .
-    (unquoted_item) @function.builtin
-    (_)))
+  . (identifier) @_include
+  (#eq? @_include "include")
+  . [(string) (identifier)] @string.special.path)
 
-; strings
-(quoted_item) @string
+(list
+  . (identifier) @_def
+  (#any-of? @_def "deflayer" "deflayer-mapped" "defchords" "deftemplate")
+  . (identifier) @namespace)
 
-; aliases
-((unquoted_item) @string.special.symbol
-  (#match? @string.special.symbol "@.+"))
+(list
+  . (identifier) @_def
+  (#eq? @_def "deflayermap")
+  . (list (identifier) @namespace))
 
-; variables
-((unquoted_item) @variable
-  (#match? @variable "\\$.+"))
+(list
+  . (identifier) @_def
+  (#any-of? @_def "deflayer" "deflayer-mapped" "defchords" "deftemplate")
+  . (identifier) @module)
 
+(list
+  . (identifier) @_def
+  (#eq? @_def "deflayermap")
+  . (list (identifier) @module))

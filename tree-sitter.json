@@ -10,11 +10,13 @@
         "kbd"
       ],
       "injection-regex": "^kanata$",
-      "class-name": "TreeSitterKanata"
+      "class-name": "TreeSitterKanata",
+      "highlights": ["queries/highlights.scm"],
+      "injections": ["queries/injections.scm"]
     }
   ],
   "metadata": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "license": "MIT",
     "description": "Tree-sitter grammar for kanata",
     "authors": [
